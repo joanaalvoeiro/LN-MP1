@@ -11,6 +11,8 @@ class Question:
 	    self.fine_lbl = fine_lbl
 	    self.question = question
 
+test_global_questions = []
+chosen_global_questions = []
 
 def parse_training_file(filename):
     questions = []
@@ -48,15 +50,15 @@ def preprocess_question(question):
 
 def standardize(question):
     #make everything lowercase and remove punctuation and some symbols
-    return re.sub("[?|\.|!|:|,|;|`|']", '', question).lower()
+    return re.sub("[?|\.|!|:|,|;|`|'|\"]", '', question).lower()
 
 def tokenize(question):
     return word_tokenize(question)
 
 def remove_stopwords(question):
     question_words = set(['what', 'which', 'who', 'why', 'when', 'how', 'where', 'whose'])
-    extra_stopwords = set(['&'])
-    stopword_set = set(stopwords.words('english')) - question_words
+    extra_stopwords = ['&', 'first', 'second', 'third', 'go']
+    stopword_set = set(stopwords.words('english') + extra_stopwords) - question_words
 
     filtered_question = [w for w in question if not w in stopword_set]
 
@@ -77,7 +79,8 @@ def predict_labels(test_questions, known_questions, coarseness):
     labels = []
     n_known_questions = len(known_questions)
     for test_question in test_questions:
-        smallest_dist = 0.8
+        test_global_questions.append(test_question)
+        smallest_dist = 5000
         closest_question = None
         for i in range(n_known_questions):
             dist = jaccard_distance(set(test_question), set(known_questions[i].question))
@@ -86,6 +89,7 @@ def predict_labels(test_questions, known_questions, coarseness):
                 closest_question = known_questions[i]
         if(closest_question != None):
             labels.append(get_label(closest_question, coarseness))
+            chosen_global_questions.append(closest_question.question)
         else:
             labels.append(None)
 
@@ -104,6 +108,22 @@ def main():
     #now time to compare and decide stuff
 
     labels = predict_labels(test_questions, known_questions, coarseness)
+
+    
+    with open("treated_known_questions.txt", 'w') as known:
+        for known_question in chosen_global_questions:
+            for item in known_question:
+                known.write(item + " ")
+            known.write("\n")
+    known.close()
+
+    with open("treated_test_questions.txt", 'w') as test:
+        for test_question in test_global_questions:
+            for item in test_question:
+                test.write(item + " ")
+            test.write("\n")
+    test.close()
+
 
     for label in labels:
         print("{}".format(label))
