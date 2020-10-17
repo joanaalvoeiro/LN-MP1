@@ -12,6 +12,16 @@ def main():
         lines2 = f2.readlines()
     f2.close()
 
+    if(not ':' in lines2[0]):
+        lines3 = lines1
+        lines1 = []
+        for line in lines3:
+            fine_separator = line.find(":")
+
+            coarse_lbl = line[:fine_separator] + "\n"
+
+            lines1.append(coarse_lbl)
+
     matches = 0
     n_lines = len(lines1)
     for i in range(n_lines):
