@@ -16,7 +16,7 @@ test_global_questions = []
 chosen_global_questions = []
 
 
-def parse_training_file(filename):
+def parse_training_file(filename,coarseness):
     questions = []
     with open(filename) as f:
         lines = f.readlines()
@@ -28,27 +28,30 @@ def parse_training_file(filename):
 
         coarse_lbl = line[:fine_separator]
         fine_lbl = line[:question_separator]
-        question = preprocess_question(line[question_separator:].strip())
+        question = preprocess_question(line[question_separator:].strip(),coarseness)
         questions.append(Question(coarse_lbl, fine_lbl, question))
     
     return questions
 
 
-def parse_test_file(filename):
+def parse_test_file(filename,coarseness):
     questions = []
     with open(filename) as f:
         lines = f.readlines()
     f.close()
 
     for line in lines:
-        question = preprocess_question(line.strip())
+        question = preprocess_question(line.strip(),coarseness)
         questions.append(question)
     
     return questions
 
 
-def preprocess_question(question):
-    return stem(remove_stopwords(tokenize(standardize(question))))
+def preprocess_question(question,coarseness):
+    if coarseness == "-fine":
+        return stem(bigrams_aux(remove_stopwords(tokenize(standardize(question)))),coarseness)
+    else:
+        return stem(remove_stopwords(tokenize(standardize(question))),coarseness)
 
 
 def standardize(question):
@@ -73,9 +76,16 @@ def remove_stopwords(question):
     return filtered_question
 
 
-def stem(question):
+def stem(question,coarseness):
     stemmer = SnowballStemmer("english")
-    stemmed_question = [stemmer.stem(w) for w in question ]
+    if coarseness == "-fine":
+        stemmed_question = []
+        for pair in question:
+            for w in pair:
+                stemmed_question += [stemmer.stem(w)]
+
+    else:
+        stemmed_question = [stemmer.stem(w) for w in question]
     return stemmed_question
 
 
@@ -111,9 +121,9 @@ def main():
     training_file = sys.argv[2]
     test_file = sys.argv[3]
 
-    known_questions = parse_training_file(training_file)
+    known_questions = parse_training_file(training_file,coarseness)
 
-    test_questions = parse_test_file(test_file)
+    test_questions = parse_test_file(test_file,coarseness)
 
     #now time to compare and decide stuff
 
