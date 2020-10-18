@@ -57,7 +57,7 @@ def tokenize(question):
 
 def remove_stopwords(question):
     question_words = set(['what', 'which', 'who', 'why', 'when', 'how', 'where', 'whose'])
-    extra_stopwords = ['&', 'first', 'second', 'third', 'go']
+    extra_stopwords = ['&', 'first', 'second', 'go', 'one', 'two', 'four','five','%','=']
     stopword_set = set(stopwords.words('english') + extra_stopwords) - question_words
 
     filtered_question = [w for w in question if not w in stopword_set]
