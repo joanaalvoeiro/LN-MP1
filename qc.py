@@ -57,9 +57,9 @@ def parse_test_file(filename,coarseness):
 
 def preprocess_question(question,coarseness):
     if coarseness == "-fine":
-        return bigrams_aux(remove_stopwords(tokenize(standardize(question))))
+        return bigrams_aux(remove_stopwords(tokenize(standardize(question)),coarseness))
     else:
-        return stem(remove_stopwords(tokenize(standardize(question))))
+        return stem(remove_stopwords(tokenize(standardize(question))),coarseness)
 
 
 def standardize(question):
@@ -75,11 +75,15 @@ def bigrams_aux(question):
     return list(bigrams(question))
 
 
-def remove_stopwords(question):
+def remove_stopwords(question,coarseness):
     question_words = set(['what', 'which', 'who', 'why', 'when', 'how', 'where', 'whose'])
-    extra_stopwords = ['&', 'first', 'second', 'go', 'one', 'two', 'four','five','%','=']
-    stopword_set = set(stopwords.words('english')+ extra_stopwords) - question_words
 
+    if(coarseness == '-fine'):
+        extra_stopwords = ['&', 'first','one','four','five']
+    else:
+        extra_stopwords = ['&', 'first', 'second', 'go', 'one', 'two', 'four','five','%','=']
+
+    stopword_set = set(stopwords.words('english')+ extra_stopwords) - question_words
     filtered_question = [w for w in question if not w in stopword_set]
     return filtered_question
 
