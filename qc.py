@@ -29,6 +29,10 @@ def parse_training_file(filename,coarseness):
         coarse_lbl = line[:fine_separator]
         fine_lbl = line[:question_separator]
         question = preprocess_question(line[question_separator:].strip(),coarseness)
+
+        if coarseness == "-fine":
+            question = layout_form_fine(question)
+
         questions.append(Question(coarse_lbl, fine_lbl, question))
     
     return questions
@@ -42,6 +46,10 @@ def parse_test_file(filename,coarseness):
 
     for line in lines:
         question = preprocess_question(line.strip(),coarseness)
+
+        if coarseness == "-fine":
+            question = layout_form_fine(question)
+
         questions.append(question)
     
     return questions
@@ -49,9 +57,9 @@ def parse_test_file(filename,coarseness):
 
 def preprocess_question(question,coarseness):
     if coarseness == "-fine":
-        return stem(bigrams_aux(remove_stopwords(tokenize(standardize(question)))),coarseness)
+        return bigrams_aux(remove_stopwords(tokenize(standardize(question))))
     else:
-        return stem(remove_stopwords(tokenize(standardize(question))),coarseness)
+        return stem(remove_stopwords(tokenize(standardize(question))))
 
 
 def standardize(question):
@@ -76,16 +84,9 @@ def remove_stopwords(question):
     return filtered_question
 
 
-def stem(question,coarseness):
+def stem(question):
     stemmer = SnowballStemmer("english")
-    if coarseness == "-fine":
-        stemmed_question = []
-        for pair in question:
-            for w in pair:
-                stemmed_question += [stemmer.stem(w)]
-
-    else:
-        stemmed_question = [stemmer.stem(w) for w in question]
+    stemmed_question = [stemmer.stem(w) for w in question]
     return stemmed_question
 
 
@@ -94,6 +95,14 @@ def get_label(question, coarseness):
         return question.coarse_lbl
     elif(coarseness == "-fine"):
         return question.fine_lbl
+
+
+def layout_form_fine(question):
+    q = []
+    for pair in question:
+        for w in pair:
+            q += [w]
+    return q
 
 
 def predict_labels(test_questions, known_questions, coarseness):
