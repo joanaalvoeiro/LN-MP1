@@ -59,7 +59,7 @@ def preprocess_question(question,coarseness):
     if coarseness == "-fine":
         return bigrams_aux(remove_stopwords(tokenize(standardize(question)),coarseness))
     else:
-        return stem(remove_stopwords(tokenize(standardize(question))),coarseness)
+        return stem(remove_stopwords(tokenize(standardize(question)),coarseness))
 
 
 def standardize(question):
@@ -79,9 +79,9 @@ def remove_stopwords(question,coarseness):
     question_words = set(['what', 'which', 'who', 'why', 'when', 'how', 'where', 'whose'])
 
     if(coarseness == '-fine'):
-        extra_stopwords = ['&', 'first','one','four','five']
+        extra_stopwords = ['&', 'first','one','four','five','fourth']
     else:
-        extra_stopwords = ['&', 'first', 'second', 'go', 'one', 'two', 'four','five','%','=']
+        extra_stopwords = ['&', 'first', 'second', 'go', 'one', 'two', 'four','five']
 
     stopword_set = set(stopwords.words('english')+ extra_stopwords) - question_words
     filtered_question = [w for w in question if not w in stopword_set]
