@@ -5,6 +5,10 @@ from nltk.tokenize import word_tokenize
 from nltk.stem.snowball import SnowballStemmer
 from nltk.metrics.distance import jaccard_distance
 from nltk import bigrams
+from collections import Counter
+from nltk import WordNetLemmatizer
+
+
 
 class Question:
     def __init__(self, coarse_lbl, fine_lbl, question):
@@ -18,6 +22,8 @@ chosen_global_questions = []
 
 def parse_training_file(filename,coarseness):
     questions = []
+    tokens = []
+    question_words = ['what', 'which', 'who', 'why', 'when', 'how', 'where', 'whose']
     with open(filename) as f:
         lines = f.readlines()
     f.close()
@@ -34,7 +40,14 @@ def parse_training_file(filename,coarseness):
             question = layout_form_fine(question)
 
         questions.append(Question(coarse_lbl, fine_lbl, question))
-    
+
+    for question in questions:
+        for token in question.question:
+            if token not in question_words:
+                tokens.append(token)
+
+    word_count = Counter(tokens)
+    most_common = word_count.most_common(20)
     return questions
 
 
@@ -81,7 +94,8 @@ def remove_stopwords(question,coarseness):
     if(coarseness == '-fine'):
         extra_stopwords = ['&', 'first','one','four','five','fourth']
     else:
-        extra_stopwords = ['&', 'first', 'second', 'go', 'one', 'two', 'four','five']
+        extra_stopwords = ['&','name','world','first','second','go','one', 'two', 'four','five','get','origin']
+
 
     stopword_set = set(stopwords.words('english')+ extra_stopwords) - question_words
     filtered_question = [w for w in question if not w in stopword_set]
@@ -89,9 +103,10 @@ def remove_stopwords(question,coarseness):
 
 
 def stem(question):
-    stemmer = SnowballStemmer("english")
-    stemmed_question = [stemmer.stem(w) for w in question]
-    return stemmed_question
+    lemma = WordNetLemmatizer()
+    lemma_verbs = [lemma.lemmatize(w,pos = "v") for w in question]
+    lemma_nouns = [lemma.lemmatize(w,pos = "n") for w in lemma_verbs]
+    return lemma_nouns
 
 
 def get_label(question, coarseness):
