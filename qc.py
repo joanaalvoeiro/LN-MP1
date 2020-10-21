@@ -1,13 +1,12 @@
 import sys
 import re
+import numpy as np
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
-from nltk.stem.snowball import SnowballStemmer
 from nltk.metrics.distance import jaccard_distance
 from nltk import bigrams
 from collections import Counter
 from nltk import WordNetLemmatizer
-
 
 
 class Question:
@@ -72,7 +71,7 @@ def preprocess_question(question,coarseness):
     if coarseness == "-fine":
         return bigrams_aux(remove_stopwords(tokenize(standardize(question)),coarseness))
     else:
-        return stem(remove_stopwords(tokenize(standardize(question)),coarseness))
+        return lemma(remove_stopwords(tokenize(standardize(question)),coarseness))
 
 
 def standardize(question):
@@ -102,7 +101,7 @@ def remove_stopwords(question,coarseness):
     return filtered_question
 
 
-def stem(question):
+def lemma(question):
     lemma = WordNetLemmatizer()
     lemma_verbs = [lemma.lemmatize(w,pos = "v") for w in question]
     lemma_nouns = [lemma.lemmatize(w,pos = "n") for w in lemma_verbs]
@@ -143,6 +142,56 @@ def predict_labels(test_questions, known_questions, coarseness):
              labels.append(None)
     return labels
 
+
+def predict_labels_tf_idf(test_questions, known_questions, coarseness):
+    test_tf_idf, known_tf_idf = tf_idf(test_questions, known_questions)
+
+    labels = []
+    n_known_questions = len(known_questions)
+
+    #for test_question in test_questions:
+    #   best_score
+
+    return labels
+
+
+def tf_idf(test_questions, known_questions):
+    questions_list = [test_questions, [q.question for q in known_questions]]
+    tfs = [[], []]
+    doc_terms = [{}, {}]
+    terms = set([])
+
+    for qn in range(len(questions_list)):
+        questions = questions_list[qn]
+        n_questions = len(questions)
+        for i in range(n_questions):
+            tfs[qn].append({})
+            for word in questions[i]:
+                terms.add(word)
+                if(word in tfs[qn][i]):
+                    tfs[qn][i][word] += 1/len(questions[i])
+                else:
+                    tfs[qn][i][word] = 1/len(questions[i])
+                    if(word in doc_terms[qn]):
+                        doc_terms[qn][word] += 1
+                    else:
+                        doc_terms[qn][word] = 1
+
+    terms = list(terms)
+    tf_idf = np.zeros((2, n_questions, len(terms), 1))
+    
+    for qn in range(len(questions_list)):
+        n_questions = len(questions_list[qn])
+        for i in range(n_questions):
+            for j in range(len(terms)):
+                if(terms[j] in tfs[qn][i]):
+                    df = doc_terms[qn][terms[j]]
+                    tf_idf[qn][i][j] = tfs[qn][i][terms[j]] * np.log(n_questions/df + 1)
+                else:
+                    tf_idf[qn][i][j] = 0
+
+    return tf_idf[0], tf_idf[1]
+     
 
 def main():
     coarseness = sys.argv[1]
