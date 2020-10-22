@@ -71,7 +71,6 @@ def tf_idf(test_questions, known_questions):
 def parse_training_file(filename,coarseness):
     questions = []
     tokens = []
-    question_words = ['what', 'which', 'who', 'why', 'when', 'how', 'where', 'whose']
     with open(filename) as f:
         lines = f.readlines()
     f.close()
@@ -89,13 +88,7 @@ def parse_training_file(filename,coarseness):
 
         questions.append(Question(coarse_lbl, fine_lbl, question))
 
-    for question in questions:
-        for token in question.question:
-            if token not in question_words:
-                tokens.append(token)
 
-    word_count = Counter(tokens)
-    most_common = word_count.most_common(20)
     return questions
 
 
@@ -137,7 +130,8 @@ def bigrams_aux(question):
 
 
 def remove_stopwords(question,coarseness):
-    question_words = set(['what', 'which', 'who', 'why', 'when', 'how', 'where', 'whose'])
+    question_words =  set(['what', 'What', 'which', 'Which', 'who', 'Who', 'why', 'Why', 'when', 'When', 'how', 'How', 'where', 'Where',
+         'Whose', 'whose'])
 
     if(coarseness == '-fine'):
         extra_stopwords = ['&', 'first','one','four','five','fourth']
@@ -154,7 +148,20 @@ def lemma(question):
     lemma = WordNetLemmatizer()
     lemma_verbs = [lemma.lemmatize(w,pos = "v") for w in question]
     lemma_nouns = [lemma.lemmatize(w,pos = "n") for w in lemma_verbs]
+    #lemmatized = [wnl().lemmatize(w.lower()) for w in lemma_nouns]
     return lemma_nouns
+
+
+def aux_most_common_words(questions):
+    tokens = []
+    question_words = ['what', 'which', 'who', 'why', 'when', 'how', 'where', 'whose']
+    for question in questions:
+        for token in question.question:
+            if token not in question_words:
+                tokens.append(token)
+
+    word_count = Counter(tokens)
+    word_count.most_common(20)
 
 
 def get_label(question, coarseness):
