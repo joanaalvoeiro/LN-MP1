@@ -7,6 +7,8 @@ from nltk.metrics.distance import jaccard_distance
 from nltk import bigrams
 from collections import Counter
 from nltk import WordNetLemmatizer
+from nltk import WordNetLemmatizer as wnl
+
 
 
 class Question:
@@ -81,8 +83,7 @@ def bigrams_aux(question):
 
 
 def remove_stopwords(question,coarseness):
-    question_words =  set(['what', 'What', 'which', 'Which', 'who', 'Who', 'why', 'Why', 'when', 'When', 'how', 'How', 'where', 'Where',
-         'Whose', 'whose'])
+    question_words =  set(['what' 'which', 'who', 'why', 'when', 'how', 'where', 'whose'])
 
     if(coarseness == '-fine'):
         extra_stopwords = ['&', 'first','one','four','five','fourth']
@@ -90,7 +91,7 @@ def remove_stopwords(question,coarseness):
         extra_stopwords = ['&','name','world','first','second','go','one', 'two', 'four','five','get','origin']
 
 
-    stopword_set = set(stopwords.words('english')+ extra_stopwords) - question_words
+    stopword_set = set(stopwords.words('english') + extra_stopwords) - question_words
     filtered_question = [w for w in question if not w in stopword_set]
     return filtered_question
 
@@ -99,8 +100,8 @@ def lemma(question):
     lemma = WordNetLemmatizer()
     lemma_verbs = [lemma.lemmatize(w,pos = "v") for w in question]
     lemma_nouns = [lemma.lemmatize(w,pos = "n") for w in lemma_verbs]
-    #lemmatized = [wnl().lemmatize(w.lower()) for w in lemma_nouns]
-    return lemma_nouns
+    lemmatized = [wnl().lemmatize(w.lower()) for w in lemma_nouns]
+    return lemmatized
 
 
 def aux_most_common_words(questions):
@@ -186,7 +187,7 @@ def tf_idf(test_questions, known_questions):
 
     terms = list(terms)
     tf_idf = np.zeros((2, n_questions, len(terms), 1))
-    
+
     for qn in range(len(questions_list)):
         n_questions = len(questions_list[qn])
         for i in range(n_questions):
@@ -198,7 +199,7 @@ def tf_idf(test_questions, known_questions):
                     tf_idf[qn][i][j] = 0
 
     return tf_idf[0], tf_idf[1]
-     
+
 
 def main():
     coarseness = sys.argv[1]
