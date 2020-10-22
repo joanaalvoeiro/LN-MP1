@@ -130,8 +130,7 @@ def bigrams_aux(question):
 
 
 def remove_stopwords(question,coarseness):
-    question_words =  set(['what', 'What', 'which', 'Which', 'who', 'Who', 'why', 'Why', 'when', 'When', 'how', 'How', 'where', 'Where',
-         'Whose', 'whose'])
+    question_words =  set(['what','which','who', 'why', 'when', 'how', 'where', 'whose'])
 
     if(coarseness == '-fine'):
         extra_stopwords = ['&', 'first','one','four','five','fourth']
