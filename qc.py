@@ -2,11 +2,14 @@ import sys
 import re
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
-from nltk.stem.snowball import SnowballStemmer
 from nltk.metrics.distance import jaccard_distance
 from nltk import bigrams
 from collections import Counter
 from nltk import WordNetLemmatizer
+import pandas as pd
+import math
+from nltk import WordNetLemmatizer as wnl
+
 
 
 
@@ -22,8 +25,7 @@ chosen_global_questions = []
 
 def parse_training_file(filename,coarseness):
     questions = []
-    tokens = []
-    question_words = ['what', 'which', 'who', 'why', 'when', 'how', 'where', 'whose']
+    dic_words = {}
     with open(filename) as f:
         lines = f.readlines()
     f.close()
@@ -41,13 +43,6 @@ def parse_training_file(filename,coarseness):
 
         questions.append(Question(coarse_lbl, fine_lbl, question))
 
-    for question in questions:
-        for token in question.question:
-            if token not in question_words:
-                tokens.append(token)
-
-    word_count = Counter(tokens)
-    most_common = word_count.most_common(20)
     return questions
 
 
@@ -72,7 +67,8 @@ def preprocess_question(question,coarseness):
     if coarseness == "-fine":
         return bigrams_aux(remove_stopwords(tokenize(standardize(question)),coarseness))
     else:
-        return stem(remove_stopwords(tokenize(standardize(question)),coarseness))
+        return lemma(remove_stopwords(tokenize(standardize(question)),coarseness))
+
 
 
 def standardize(question):
@@ -89,24 +85,36 @@ def bigrams_aux(question):
 
 
 def remove_stopwords(question,coarseness):
-    question_words = set(['what', 'which', 'who', 'why', 'when', 'how', 'where', 'whose'])
-
+    question_words = set(['what','What', 'which', 'Which', 'who','Who', 'why','Why', 'when','When', 'how', 'How',  'where','Where','Whose', 'whose'])
     if(coarseness == '-fine'):
         extra_stopwords = ['&', 'first','one','four','five','fourth']
     else:
         extra_stopwords = ['&','name','world','first','second','go','one', 'two', 'four','five','get','origin']
 
 
-    stopword_set = set(stopwords.words('english')+ extra_stopwords) - question_words
+    stopword_set = set(stopwords.words('english') + extra_stopwords) - question_words
     filtered_question = [w for w in question if not w in stopword_set]
     return filtered_question
 
 
-def stem(question):
+def lemma(question):
     lemma = WordNetLemmatizer()
     lemma_verbs = [lemma.lemmatize(w,pos = "v") for w in question]
     lemma_nouns = [lemma.lemmatize(w,pos = "n") for w in lemma_verbs]
-    return lemma_nouns
+    lemmatized =  [wnl().lemmatize(w.lower()) for w in lemma_nouns]
+    return lemmatized
+
+
+def aux_most_common_words(questions):
+    tokens = []
+    question_words = ['what', 'which', 'who', 'why', 'when', 'how', 'where', 'whose']
+    for question in questions:
+        for token in question.question:
+            if token not in question_words:
+                tokens.append(token)
+
+    word_count = Counter(tokens)
+    word_count.most_common(20)
 
 
 def get_label(question, coarseness):
@@ -143,6 +151,17 @@ def predict_labels(test_questions, known_questions, coarseness):
              labels.append(None)
     return labels
 
+
+def tdidf_pre(test_questions):
+    num_Of_words_t = create_dic_words_t(test_questions)
+
+    tfA = computeTF(num_Of_words_t, test_questions)
+
+    idfs = computeIDF([num_Of_words_t])
+
+    tfidf_t = computeTFIDF(tfA, idfs)
+    df = pd.DataFrame([tfidf_t])
+    return df
 
 def main():
     coarseness = sys.argv[1]
