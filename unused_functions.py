@@ -1,6 +1,8 @@
-from nltk import WordNetLemmatizer
 import numpy as np
+import nltk
+from nltk.corpus import wordnet
 from collections import Counter
+from nltk import WordNetLemmatizer
 
 def cosine_similarity(a1, a2):
     return np.dot(a1, np.transpose(a2)) / (np.linalg.norm(a1) * np.linalg.norm(a2))
@@ -65,12 +67,24 @@ def predict_labels_tf_idf(test_questions, known_questions, coarseness):
 
     return labels
 
+
+def get_pos_tag(word):
+    tag = nltk.pos_tag(word)[0][1].upper()
+
+    if tag.startswith('J'):
+        return wordnet.ADJ
+    elif tag.startswith('V'):
+        return wordnet.VERB
+    elif tag.startswith('N'):
+        return wordnet.NOUN
+    else:
+        return wordnet.ADV
+
+
 def lemma(question):
     lemma = WordNetLemmatizer()
-    lemma_verbs = [lemma.lemmatize(w,pos = "v") for w in question]
-    lemma_nouns = [lemma.lemmatize(w,pos = "n") for w in lemma_verbs]
-    #lemmatized = [wnl().lemmatize(w.lower()) for w in lemma_nouns]
-    return lemma_nouns
+
+    return [lemma.lemmatize(w, get_pos_tag) for w in question]
 
 def get_most_common_words(questions):
     tokens = []
