@@ -81,17 +81,30 @@ def get_pos_tag(word):
         return wordnet.ADV
 
 
+def get_pos_tag(word):
+    tag = nltk.pos_tag(word)[0][1].upper()
+
+    if tag.startswith('J'):
+        return wordnet.ADJ
+    elif tag.startswith('V'):
+        return wordnet.VERB
+    elif tag.startswith('N'):
+        return wordnet.NOUN
+    elif tag.startswith('R'):
+        return wordnet.ADV
+    else:
+        return ''
+
+
 def lemma(question):
     lemma = WordNetLemmatizer()
+    lemmatized = []
 
-    return [lemma.lemmatize(w, get_pos_tag) for w in question]
+    for word in question:
+        tag = get_pos_tag(word)
+        if len(tag) > 0:
+            lemmatized.append(lemma.lemmatize(word, tag))
+        else:
+            lemmatized.append(lemma.lemmatize(word))
 
-def get_most_common_words(questions):
-    tokens = []
-    
-    for question in questions:
-        for token in question.question:
-            tokens.append(token)
-
-    word_count = Counter(tokens)
-    word_count.most_common(20)
+    return lemmatized
