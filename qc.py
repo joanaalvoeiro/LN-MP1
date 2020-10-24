@@ -1,5 +1,6 @@
 import re
 import sys
+import string
 import numpy as np
 
 from nltk import bigrams
@@ -7,7 +8,6 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.stem.snowball import SnowballStemmer
 from nltk.metrics.distance import jaccard_distance
-
 
 class Question:
     def __init__(self, coarse_lbl, fine_lbl, question):
@@ -79,8 +79,9 @@ def preprocess_question(question,coarseness):
 
 
 def standardize(question):
-    #remove punctuation and some symbols
-    return re.sub("[?|\.|!|:|,|;|`|'|\"]", '', question)
+    #remove punctuation and some symbols, lowercase
+    standardized = "".join([char for char in question if char not in string.punctuation])
+    return standardized.lower()
 
 
 def tokenize(question):
@@ -92,12 +93,12 @@ def bigramify(question):
 
 
 def remove_stopwords(question,coarseness):
-    question_words =  set(['what', 'which', 'who', 'why', 'when', 'how', 'where','whose'])
+    question_words =  set(['what', 'which', 'who', 'why', 'when', 'how', 'where', 'whose'])
 
     if(coarseness == '-fine'):
-        extra_stopwords = ['&', 'first','one','four','five','fourth']
+        extra_stopwords = ['first' ,'one', 'four']
     else:
-        extra_stopwords = ['&','name','world','first','second','go','one', 'two', 'four','five','get','origin']
+        extra_stopwords = ['world', 'go','one', 'four']
 
     stopword_set = set(stopwords.words('english') + extra_stopwords) - question_words
     filtered_question = [w for w in question if not w in stopword_set]
