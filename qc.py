@@ -1,4 +1,4 @@
-#hybrid (coarse model: similarity measure, fine model: ngrams and similarity measure)
+#APPROACH = hybrid (coarse model: similarity measure, fine model: ngrams and similarity measure)
 import sys
 import string
 
