@@ -1,8 +1,9 @@
 import numpy as np
 import nltk
 from nltk.corpus import wordnet
-from collections import Counter
 from nltk import WordNetLemmatizer
+from nltk.stem import PorterStemmer
+
 
 def cosine_similarity(a1, a2):
     return np.dot(a1, np.transpose(a2)) / (np.linalg.norm(a1) * np.linalg.norm(a2))
@@ -108,3 +109,21 @@ def lemma(question):
             lemmatized.append(lemma.lemmatize(word))
 
     return lemmatized
+
+
+def token_stemm_Porter(questions):
+    q = []
+    stemmer = nltk.stem.PorterStemmer()
+    for word in questions:
+        w = stemmer.stem(word)
+        q.append(w)
+    return q
+
+
+def token_stemm_RSLP(questions):
+    q = []
+    stemmer = nltk.stem.RSLPStemmer()
+    for word in questions:
+        w = stemmer.stem(word)
+        q.append(word)
+    return q

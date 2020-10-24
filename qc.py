@@ -1,7 +1,6 @@
-import re
+#hybrid (coarse model: similarity measure, fine model: ngrams and similarity measure)
 import sys
 import string
-import numpy as np
 
 from nltk import bigrams
 from nltk.corpus import stopwords
